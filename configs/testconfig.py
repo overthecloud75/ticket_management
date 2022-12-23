@@ -2,7 +2,7 @@
 MONGO_URL = 'mongodb://localhost:27017/'
 # URL
 MONITORING_SITE = 'http://127.0.0.1:8000'
-WEB_SITE = {'domain': 'http://127.0.0.1:5000', 'ip': '127.0.0.1'}
+WEB_SITE_IP = 'ip': '127.0.0.1'
 FIREWALL_SITE = 'http://127.0.0.1:5000/firewall'
 MANUAL_SITE = ''
 ANALYZE_SITE = 'https://www.abuseipdb.com/check/'

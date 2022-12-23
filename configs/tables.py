@@ -43,6 +43,10 @@ TICKET_COLUMN_HEADER = [
         'header': 'Ticket',
     },
     {
+        'accessor': 'site',
+        'header': 'Site',
+    },
+    {
         'accessor': 'ip',
         'header': 'Attacker IP',
     },

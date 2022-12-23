@@ -1,9 +1,13 @@
+* 22/12/24
+    - 0.5.0 (models/log_db.py) <br>
+        site info is different according to host
+
 * 22/12/23
-    - 0.4.9 (mail.py) <br>
+    - 0.4.9 (models/mail.py) <br>
         DEFAULT_USER
 
 * 22/12/21
-    - 0.4.8 (iptables.py) <br>
+    - 0.4.8 (utils/iptables.py) <br>
         not use iptc anymore
 
 * 22/12/11

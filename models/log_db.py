@@ -6,7 +6,7 @@ import os
 from .db import BasicModel
 from .mail import send_email 
 from configs import BASE_DIR, EVIDENCE_DIR, CSV_FILE_NAME, USE_NOTICE_EMAIL, NGINX_ACCESS_LOG_KEYS, AUTH_LOG_KEYS
-from configs import MONITORING_SITE, WEB_SITE, FIREWALL_SITE, MANUAL_SITE, ANALYZE_SITE
+from configs import MONITORING_SITE, WEB_SITE_IP, FIREWALL_SITE, MANUAL_SITE, ANALYZE_SITE
 
 class LogModel(BasicModel):
     def __init__(self, model='fail2ban_logs', need_notice=False):
@@ -36,10 +36,16 @@ class LogModel(BasicModel):
             ticket_no = 'TCK' + str_timestamp + '-' + ticket_no
         return ticket_no
 
-    def _write_csv_and_get_attack_no(self, results, wr, keys):
+    def _write_csv_and_get_attack_no(self, results, wr, site, keys):
+        '''
+            1. write result to csv
+            2. get site, attack_no 
+        '''
         attack_no = 0 
         wr.writerow(keys)
-        for result in results:
+        for i, result in enuemerate(results):
+            if i == 0 and 'host' in result:
+                site = result['host']
             result_list = []
             for key in keys:
                 if key == 'timestamp':
@@ -51,12 +57,13 @@ class LogModel(BasicModel):
                         result_list.append('-')
             wr.writerow(result_list)
             attack_no = attack_no + 1
-        return attack_no
+        return site, attack_no
 
-    def _post_ticket(self, log, ticket_no, attack_no):
+    def _post_ticket(self, log, ticket_no, host, attack_no):
         ticket_info = log
         ticket_info['model'] = self.model
         ticket_info['ticket'] = ticket_no
+        ticket_info['site'] = site
         ticket_info['attack_no'] = attack_no
         self.db['tickets'].insert_one(ticket_info)
 
@@ -64,13 +71,13 @@ class LogModel(BasicModel):
         '''
             1. get ticket_no 
             2. make evidence file
-            3. get attack_no 
+            3. get site, attack_no 
             4. save ticket info 
         '''
         ticket_no = self._get_ticket(log)
            
         subject_main = '[보안 관제]'
-        site = WEB_SITE['ip']
+        site = WEB_SITE_IP
 
         csv_file_name = os.path.join(BASE_DIR, EVIDENCE_DIR, ticket_no + '_' + CSV_FILE_NAME)
 
@@ -79,17 +86,17 @@ class LogModel(BasicModel):
             if 'origin' in log:
                 if log['origin'] == '[modsecurity]':
                     subject_main = '[{} : {} 보안 관제] '.format(ticket_no, 'WEB')
-                    site = WEB_SITE['domain']
                     results = self.db['nginx_access_logs'].find({'ip': log['ip']}).sort('timestamp', -1)
-                    attack_no = self._write_csv_and_get_attack_no(results, wr, NGINX_ACCESS_LOG_KEYS)
+                    site, attack_no = self._write_csv_and_get_attack_no(results, wr, site, NGINX_ACCESS_LOG_KEYS)
+                    site = host
                 else:
                     subject_main = '[{} : {} 보안 관제] '.format(ticket_no, 'AUTH')  
                     results = self.db['auth_logs'].find({'ip': log['ip']}).sort('timestamp', -1)
-                    attack_no = self._write_csv_and_get_attack_no(results, wr, AUTH_LOG_KEYS)
+                    site, attack_no = self._write_csv_and_get_attack_no(results, wr, site, AUTH_LOG_KEYS)
 
-        subject = subject_main + '공격자 ip: ' + log['ip']
+        subject = subject_main + 'site: ' + site + ', 공격자 ip: ' + log['ip']
 
-        self._post_ticket(log, ticket_no, attack_no)
+        self._post_ticket(log, ticket_no, site, attack_no)
         return subject, site, attack_no, csv_file_name
 
     def _notice_email(self, log, signature=''):
@@ -98,8 +105,8 @@ class LogModel(BasicModel):
         email_list = []
         for user in security_users:
             email_list.append(user['email'])
-            if not email_list:
-                email_list.append(DEFAULT_USER)
+        if not email_list:
+            email_list.append(DEFAULT_USER)
         
         if USE_NOTICE_EMAIL:
             # https://techexpert.tips/ko/python-ko/파이썬-office-365를-사용하여-이메일-보내기
@@ -131,10 +138,10 @@ class LogModel(BasicModel):
                 .format(site, site, str_time, log['ip'], attack_no, log['geo_ip'], CSV_FILE_NAME, MONITORING_SITE, FIREWALL_SITE, MANUAL_SITE, ANALYZE_SITE + log['ip'])
 
             self.logger.info('email: {}'.format(subject))
-            print('email: {}'.format(subject))
             sent = send_email(email_list=email_list, subject=subject, body=body, attached_file=csv_file_name)
             return sent 
         else:
+            self.logger.error('email failed')
             return False
     
     def _post(self, log):
