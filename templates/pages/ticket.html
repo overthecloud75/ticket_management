@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+{% include 'table.html' %}
+{% include 'modal.html' %}
+{% include 'paging.html' %}
+{% include 'event_handler.html' %}
+
+<script src="{{ url_for('static', filename='js/ticket.js') }}"></script>
+
+{% endblock %}
