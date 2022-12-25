@@ -53,14 +53,16 @@ class Iptables:
 
     def _target_role(self, port, chain, protocol='tcp'):
         if port == 'all':
-            cmd = 'iptables -A INPUT -p {protocol} -j {chain}'.format(protocol=protocol, chain=chain)
+            # 정책 적용 우선 순위를 높이기 위해서 -A INPUT -> -I INPUT 1
+            cmd = 'iptables -I INPUT 1 -p {protocol} -j {chain}'.format(protocol=protocol, chain=chain)
             dports = 'all'
         else:
             if port == 'ssh': 
                 dports = '22'
             else:
                 dports = '80,443'
-            cmd = 'iptables -A INPUT -p {protocol} -m multiport --dports {dports} -j {chain}'.format(protocol=protocol, dports=dports, chain=chain)
+            # 정책 적용 우선 순위를 높이기 위해서 -A INPUT -> -I INPUT 1
+            cmd = 'iptables -I INPUT 1 -p {protocol} -m multiport --dports {dports} -j {chain}'.format(protocol=protocol, dports=dports, chain=chain)
         self._do_cmd(cmd)
 
     def enroll_chains(self):
