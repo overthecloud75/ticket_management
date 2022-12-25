@@ -21,6 +21,8 @@
                 {% for column in column_header %}
                 {% if column['accessor'] == 'ip'%}
                 <td class="text-center align-middle"><a href="{{ analyze_site + data[column['accessor']] }}" target="_blank">{{ data[column['accessor']] }}</a></td>
+                {% elif column['accessor'] == 'host' %}
+                <td class="text-center align-middle"><a href="{{ url_for('main.access_by_site', site=data[column['accessor']]) }}">{{ data[column['accessor']] }}</a></td>
                 {% elif column['accessor'] == 'ticket' %}
                 <td class="text-center align-middle"><a href="{{ url_for('main.history', ticket=data[column['accessor']]) }}">{{ data[column['accessor']] }}</a></td>
                 {% else %}

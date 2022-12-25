@@ -1,3 +1,9 @@
+* 22/12/25
+    - 0.5.2 (viewss/main_views.py) <br>
+        access_log_by_site
+    - 0.5.1 (viewss/main_views.py) <br>
+        access_log
+
 * 22/12/24
     - 0.5.0 (models/log_db.py) <br>
         site info is different according to host

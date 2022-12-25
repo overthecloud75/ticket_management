@@ -10,7 +10,7 @@ class Page:
         self.screen_pages = PAGE_DEFAULT['screen_pages']
         self.offset = (self.page - 1) * self.per_page
 
-    def paginate(self, data_list, count=None, collection=None):
+    def paginate(self, data_list, query={}, count=None, collection=None):
         if count:
             pass
         else:
@@ -18,8 +18,9 @@ class Page:
                 count = len(data_list)
                 data_list = data_list[self.offset:self.offset + self.per_page]
             else:
-                count = collection.count_documents({})
+                count = collection.count_documents(query)
                 collection_data_list = data_list.limit(self.per_page).skip(self.offset)
+               
                 data_list = []
                 for data in collection_data_list:
                     data['_id'] = str(data['_id'])

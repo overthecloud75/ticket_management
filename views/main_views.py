@@ -71,4 +71,24 @@ def delete_firewall_rule():
     else:
         return 'not validate', 400
 
+@bp.route('/access_log', methods=['GET'])
+def access():
+    page = request.args.get('page', default=1)
+
+    analyze_site = ANALYZE_SITE
+    management = AccessModel()
+    column_header = ACCESS_COLUMN_HEADER
+    paging, data_list = management.get(page=page)
+    return render_template('pages/access.html', **locals())
+
+@bp.route('/access_log/site/<site>', methods=['GET'])
+def access_by_site(site):
+    page = request.args.get('page', default=1)
+
+    analyze_site = ANALYZE_SITE
+    management = AccessModel()
+    column_header = ACCESS_COLUMN_HEADER
+    paging, data_list = management.get_by_site(site, page=page)
+    return render_template('pages/access.html', **locals())
+
 
