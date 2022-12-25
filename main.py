@@ -15,7 +15,7 @@ def read_log():
     nginx_error_model = LogModel(model='nginx_error_logs')
     auth_model = LogModel(model='auth_logs')
     fail2ban_model = LogModel(model='fail2ban_logs', need_notice=True)
-    analyze = Analyze()  
+    analyze = Analyze(interval=10)  
     while True:
         # timestamp를 refresh
         analyze.timestamp = datetime.now()

@@ -43,7 +43,7 @@ class LogModel(BasicModel):
         '''
         attack_no = 0 
         wr.writerow(keys)
-        for i, result in enuemerate(results):
+        for i, result in enumerate(results):
             if i == 0 and 'host' in result:
                 site = result['host']
             result_list = []
@@ -59,7 +59,7 @@ class LogModel(BasicModel):
             attack_no = attack_no + 1
         return site, attack_no
 
-    def _post_ticket(self, log, ticket_no, host, attack_no):
+    def _post_ticket(self, log, ticket_no, site, attack_no):
         ticket_info = log
         ticket_info['model'] = self.model
         ticket_info['ticket'] = ticket_no
@@ -88,7 +88,6 @@ class LogModel(BasicModel):
                     subject_main = '[{} : {} 보안 관제] '.format(ticket_no, 'WEB')
                     results = self.db['nginx_access_logs'].find({'ip': log['ip']}).sort('timestamp', -1)
                     site, attack_no = self._write_csv_and_get_attack_no(results, wr, site, NGINX_ACCESS_LOG_KEYS)
-                    site = host
                 else:
                     subject_main = '[{} : {} 보안 관제] '.format(ticket_no, 'AUTH')  
                     results = self.db['auth_logs'].find({'ip': log['ip']}).sort('timestamp', -1)
