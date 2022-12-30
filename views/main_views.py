@@ -1,9 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, url_for
 import uuid
 
-from models import Firewall, TicketModel, AccessModel
+from models import Firewall, TicketModel, AccessModel, ErrorModel
 from forms import RuleUpdateForm, TicketUpdateForm
-from configs import FIREWALL_COLUMN_HEADER, TICKET_COLUMN_HEADER, ACCESS_COLUMN_HEADER, ANALYZE_SITE
+from configs import FIREWALL_COLUMN_HEADER, TICKET_COLUMN_HEADER, ACCESS_COLUMN_HEADER, ERROR_COLUMN_HEADER, ANALYZE_SITE
 
 # blueprint
 bp = Blueprint('main', __name__, url_prefix='/')
@@ -89,6 +89,16 @@ def access_by_site(site):
     management = AccessModel()
     column_header = ACCESS_COLUMN_HEADER
     paging, data_list = management.get_by_site(site, page=page)
+    return render_template('pages/access.html', **locals())
+
+@bp.route('/error_log', methods=['GET'])
+def error():
+    page = request.args.get('page', default=1)
+
+    analyze_site = ANALYZE_SITE
+    management = ErrorModel()
+    column_header = ERROR_COLUMN_HEADER
+    paging, data_list = management.get(page=page)
     return render_template('pages/access.html', **locals())
 
 

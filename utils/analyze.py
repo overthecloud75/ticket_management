@@ -100,6 +100,8 @@ class Analyze:
                 nginx_log_dict['ip'] = message.replace('client: ', '')
             if message.startswith('server: '):
                 nginx_log_dict['server'] = message.replace('server: ', '')
+            if message.startswith('host: '):
+                nginx_log_dict['host'] = message.replace('host: ', '')
             if message.startswith('request: '):
                 request = message.replace('request: ', '')
                 request_list = request.split(' ')
@@ -114,6 +116,13 @@ class Analyze:
                 nginx_log_dict['method'] = method
                 nginx_log_dict['url'] = url
                 nginx_log_dict['http_version'] = http_version
+        
+        try:
+            geo_ip = self._find_country(nginx_log_dict['ip'])
+        except Exception as e:
+            self.logger.info('{}: {}'.format(e, line))
+            geo_ip = 'un'
+        nginx_log_dict['geo_ip'] = geo_ip
 
         return nginx_log_dict
 
