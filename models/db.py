@@ -1,3 +1,4 @@
+import logging
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 # https://stackoverflow.com/questions/7846001/what-is-the-correct-way-to-query-mongodb-for-id-using-string-by-using-python
@@ -12,12 +13,17 @@ db.fail2ban_logs.create_index([('timestamp', 1), ('ip', 1)])
 db.auth_logs.create_index([('timestamp', 1), ('ip', 1)])
 db.nginx_access_logs.create_index([('timestamp', 1), ('ip', 1)])
 db.nginx_error_logs.create_index([('timestamp', 1), ('ip', 1)])
+db.firewall_policies.create_index([('timestamp', 1), ('ip', 1)])
 
 class BasicModel:
     def __init__(self, model):
+        self.logger = logging.getLogger(__name__)
+
         self.model = model 
         self.db = db
         self.collection = self.db[self.model]
+
+        self.logger.info('{} start'.format(self.model))
         
     def get_by_id(self, _id=''):
         try:

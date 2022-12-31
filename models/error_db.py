@@ -1,16 +1,10 @@
-import logging
 from utils import Page
-from datetime import datetime 
-
 from .db import BasicModel
 
 class ErrorModel(BasicModel):
 
     def __init__(self, model='nginx_error_logs', need_notice=False):
-        self.logger = logging.getLogger(__name__)
         super().__init__(model=model)
-
-        self.logger.info('{} start'.format(self.model))
 
     def get(self, page=1):
         data_list = self.collection.find().sort('timestamp', -1)

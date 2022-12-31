@@ -1,3 +1,7 @@
+* 22/12/31
+    - 0.5.5 (models/firewall.py) <br>
+        model='firewall_policies' <br>
+
 * 22/12/30
     - 0.5.4 (views/main_views.py) <br>
         error() <br>

@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-import logging
 import csv
 import os 
 
@@ -10,10 +9,8 @@ from configs import MONITORING_SITE, WEB_SITE_IP, FIREWALL_SITE, MANUAL_SITE, AN
 
 class LogModel(BasicModel):
     def __init__(self, model='fail2ban_logs', need_notice=False):
-        self.logger = logging.getLogger(__name__)
         super().__init__(model=model)
 
-        self.logger.info('{} start'.format(self.model))
         self.need_notice = need_notice
 
     def _get_ticket(self, log):

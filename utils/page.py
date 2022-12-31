@@ -27,7 +27,10 @@ class Page:
                     if 'timestamp' in data:
                         data['timestamp'] = data['timestamp'].strftime('%Y-%m-%d  %H:%M:%S')
                     if 'fix_timestamp' in data:
-                        data['fix_timestamp'] = data['fix_timestamp'].strftime('%Y-%m-%d  %H:%M:%S')
+                        if type(data['fix_timestamp']) == str:
+                            pass
+                        else:
+                            data['fix_timestamp'] = data['fix_timestamp'].strftime('%Y-%m-%d  %H:%M:%S')
                     data_list.append(data)
         if count != 0:
             if count % self.per_page == 0:

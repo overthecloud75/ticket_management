@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for
 import uuid
+from datetime import datetime 
 
 from models import Firewall, TicketModel, AccessModel, ErrorModel
 from forms import RuleUpdateForm, TicketUpdateForm
@@ -21,7 +22,7 @@ def firewall():
     form = RuleUpdateForm()
     nonce = uuid.uuid4().hex
     if request.method == 'POST' and form.validate_on_submit():
-        request_data = {'ip': form.ip.data, 'ip_class':form.ip_class.data, 'protocol': form.protocol.data, 'port': form.port.data, 'block': form.block.data}
+        request_data = {'ip': form.ip.data, 'ip_class':form.ip_class.data, 'protocol': form.protocol.data, 'port': form.port.data, 'block': form.block.data, 'timestamp': datetime.now()}
         management.post(request_data=request_data)
 
     column_header = FIREWALL_COLUMN_HEADER
@@ -39,7 +40,7 @@ def ticket():
     form = TicketUpdateForm()
     nonce = uuid.uuid4().hex
     if request.method == 'POST':
-        request_data = {'_id': form.id.data, 'fix':form.fix.data}
+        request_data = {'_id': form.id.data, 'fix':form.fix.data, 'fix_timestamp': datetime.now()}
         management.post(request_data=request_data)
 
     column_header = TICKET_COLUMN_HEADER
@@ -48,7 +49,7 @@ def ticket():
     paging, data_list = management.get(page=page)
     return render_template('pages/ticket.html', **locals())
 
-@bp.route('/ticket/<ticket>', methods=['GET', 'POST'])
+@bp.route('/ticket/<ticket>', methods=['GET'])
 def history(ticket):
     page = request.args.get('page', default=1)
 
