@@ -1,3 +1,9 @@
+* 23/01/01
+    - 0.5.7 (views/main_views.py) <br>
+        access_by_status() <br>
+    - 0.5.6 (utils/analyzse.py) <br>
+        use messsge in nginx_error_logs <br>
+
 * 22/12/31
     - 0.5.5 (models/firewall.py) <br>
         model='firewall_policies' <br>

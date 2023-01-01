@@ -92,6 +92,16 @@ def access_by_site(site):
     paging, data_list = management.get_by_site(site, page=page)
     return render_template('pages/access.html', **locals())
 
+@bp.route('/access_log/status/<status>', methods=['GET'])
+def access_by_status(status):
+    page = request.args.get('page', default=1)
+
+    analyze_site = ANALYZE_SITE
+    management = AccessModel()
+    column_header = ACCESS_COLUMN_HEADER
+    paging, data_list = management.get_by_status(status, page=page)
+    return render_template('pages/access.html', **locals())
+
 @bp.route('/error_log', methods=['GET'])
 def error():
     page = request.args.get('page', default=1)

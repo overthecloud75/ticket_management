@@ -89,6 +89,16 @@ class Analyze:
         message_group = result.group('message')
         nginx_log_dict = {'timestamp': datetime_timestamp, 'level': level}
 
+        nginx_log_dict['msg'] = ''
+        if 'ModSecurity: Access denied with code 403' in message_group:
+            nginx_log_dict['msg'] = '403 by WAF'
+        elif 'No such file or directory' in message_group:
+            nginx_log_dict['msg'] = '404'
+        elif 'SSL_do_handshake() failed' in message_group:
+            nginx_log_dict['msg'] = 'SSL handshake failed'
+        elif 'access forbidden by rule' in message_group:
+            nginx_log_dict['msg'] = 'access forbidden'
+
         message_list = message_group.split(', ')
         for i, message in enumerate(message_list):
             message = message.replace('"', '')   
@@ -116,7 +126,7 @@ class Analyze:
                 nginx_log_dict['method'] = method
                 nginx_log_dict['url'] = url
                 nginx_log_dict['http_version'] = http_version
-        
+            
         try:
             geo_ip = self._find_country(nginx_log_dict['ip'])
         except Exception as e:

@@ -59,6 +59,10 @@ TICKET_COLUMN_HEADER = [
         'header': 'Attack NO',
     },
     {
+        'accessor': 'attack_w',
+        'header': 'Attack FRE',
+    },
+    {
         'accessor': 'origin',
         'header': 'Origin'
     },
@@ -116,6 +120,10 @@ ACCESS_COLUMN_HEADER = [
         'header': 'HTTP Version',
     },
     {
+        'accessor': 'scheme',
+        'header': 'Scheme'
+    },
+    {
         'accessor': 'method',
         'header': 'Method'
     },
@@ -130,7 +138,11 @@ ACCESS_COLUMN_HEADER = [
     {
         'accessor': 'body',
         'header': 'Body'
-    }
+    },
+    {
+        'accessor': 'request_time',
+        'header': 'Time'
+    },
 ]
 
 # error_log
@@ -178,5 +190,9 @@ ERROR_COLUMN_HEADER = [
     {
         'accessor': 'url',
         'header': 'Url'
+    },
+    {
+        'accessor': 'msg',
+        'header': 'Message'
     }
 ]

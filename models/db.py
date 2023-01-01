@@ -12,6 +12,7 @@ db = mongoClient['report']
 db.fail2ban_logs.create_index([('timestamp', 1), ('ip', 1)])
 db.auth_logs.create_index([('timestamp', 1), ('ip', 1)])
 db.nginx_access_logs.create_index([('timestamp', 1), ('ip', 1)])
+db.nginx_access_logs.create_index([('timestamp', 1), ('status', 1)])
 db.nginx_error_logs.create_index([('timestamp', 1), ('ip', 1)])
 db.firewall_policies.create_index([('timestamp', 1), ('ip', 1)])
 
@@ -23,7 +24,7 @@ class BasicModel:
         self.db = db
         self.collection = self.db[self.model]
 
-        self.logger.info('{} start'.format(self.model))
+        self.logger.info('{}'.format(self.model))
         
     def get_by_id(self, _id=''):
         try:

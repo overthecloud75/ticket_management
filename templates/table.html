@@ -1,4 +1,4 @@
-<div class="container my-3">
+<div class="container-fluid my-3">
     {% if update_title == 'Firewall' %}
     <button type="button" class="btn btn-primary my-3" id="update">
         {{ update_title + ' Update' }}
@@ -25,6 +25,8 @@
                 <td class="text-center align-middle"><a href="{{ url_for('main.access_by_site', site=data[column['accessor']]) }}">{{ data[column['accessor']] }}</a></td>
                 {% elif column['accessor'] == 'ticket' %}
                 <td class="text-center align-middle"><a href="{{ url_for('main.history', ticket=data[column['accessor']]) }}">{{ data[column['accessor']] }}</a></td>
+                {% elif column['accessor'] == 'status' %}
+                <td class="text-center align-middle"><a href="{{ url_for('main.access_by_status', status=data[column['accessor']]) }}">{{ data[column['accessor']] }}</a></td>
                 {% else %}
                 <td class="text-center align-middle">{{ data[column['accessor']] }}</td>
                 {% endif %}

@@ -28,3 +28,10 @@ class AccessModel(BasicModel):
         get_page = Page(page)
         paging, data_list = get_page.paginate(data_list, query=query, collection=self.collection)
         return paging, data_list
+
+    def get_by_status(self, status, page=1):
+        query = {'status': int(status)}
+        data_list = self.collection.find(query).sort('timestamp', -1)
+        get_page = Page(page)
+        paging, data_list = get_page.paginate(data_list, query=query, collection=self.collection)
+        return paging, data_list

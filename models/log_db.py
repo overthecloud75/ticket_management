@@ -57,11 +57,16 @@ class LogModel(BasicModel):
         return site, attack_no
 
     def _post_ticket(self, log, ticket_no, site, attack_no):
+
         ticket_info = log
         ticket_info['model'] = self.model
         ticket_info['ticket'] = ticket_no
         ticket_info['site'] = site
         ticket_info['attack_no'] = attack_no
+        try:
+            ticket_info['attack_w'] = self.db['tickets'].count_documents({'ip': ticket_info['ip']}) + 1
+        except Exception as e:
+            self.logger.error('attack_w is failed: {}'.format(e))
         self.db['tickets'].insert_one(ticket_info)
 
     def _get_subject(self, log):
@@ -154,7 +159,10 @@ class LogModel(BasicModel):
                         self.collection.update_one({'timestamp': log['timestamp'], 'ip': log['ip']}, {'$set': log}, upsert=True)
                         self._notice_email(log)
             else:
-                self.collection.update_one({'timestamp': log['timestamp'], 'ip': log['ip']}, {'$set': log}, upsert=True)
+                if 'url' in log:
+                    self.collection.update_one({'timestamp': log['timestamp'], 'ip': log['ip'], 'url': log['url']}, {'$set': log}, upsert=True)
+                else:
+                    self.collection.update_one({'timestamp': log['timestamp'], 'ip': log['ip']}, {'$set': log}, upsert=True)
 
     def many_post(self, log_list):
         log_list = reversed(log_list)
