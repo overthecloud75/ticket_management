@@ -58,13 +58,15 @@ class LogModel(BasicModel):
 
     def _post_ticket(self, log, ticket_no, site, attack_no):
 
+        ip = log['ip']
         ticket_info = log
         ticket_info['model'] = self.model
         ticket_info['ticket'] = ticket_no
         ticket_info['site'] = site
         ticket_info['attack_no'] = attack_no
+        ticket_info['str_ip'] = self.make_str_ip(ip)
         try:
-            ticket_info['attack_w'] = self.db['tickets'].count_documents({'ip': ticket_info['ip']}) + 1
+            ticket_info['attack_w'] = self.db['tickets'].count_documents({'ip': ip}) + 1
         except Exception as e:
             self.logger.error('attack_w is failed: {}'.format(e))
         self.db['tickets'].insert_one(ticket_info)
@@ -169,4 +171,16 @@ class LogModel(BasicModel):
         for log in log_list:
             self.logger.info('{}: {}'.format(self.model, log))
             self._post(log)
+
+    def make_str_ip(self, ip):
+        ip_split = ip.split('.')
+        for i in range(4):
+            if len(ip_split[i]) == 3:
+                pass
+            elif len(ip_split[i]) == 2:
+                ip_split[i] = '0' + ip_split[i]
+            elif len(ip_split[i]) == 1:
+                ip_split[i] = '00' + ip_split[i]
+        str_ip = ip_split[0] + '.' + ip_split[1] + '.' + ip_split[2] + '.' + ip_split[3]
+        return str_ip
 

@@ -1,4 +1,6 @@
 * 23/01/01
+    - 0.5.8 (models/firewall.py) <br>
+        consider when ip range /24 case <br>
     - 0.5.7 (views/main_views.py) <br>
         access_by_status() <br>
     - 0.5.6 (utils/analyzse.py) <br>

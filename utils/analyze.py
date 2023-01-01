@@ -96,6 +96,8 @@ class Analyze:
             nginx_log_dict['msg'] = '404'
         elif 'SSL_do_handshake() failed' in message_group:
             nginx_log_dict['msg'] = 'SSL handshake failed'
+        elif 'SSL_read() failed' in message_group:
+            nginx_log_dict['msg'] = 'SSL read failed'
         elif 'access forbidden by rule' in message_group:
             nginx_log_dict['msg'] = 'access forbidden'
 
@@ -318,7 +320,6 @@ class Analyze:
                         if auth_log_dict['timestamp'] < self.previous_timestamp:
                             break
                         auth_log_list.append(auth_log_dict)
-
         return auth_log_list
 
 if __name__ == '__main__':
