@@ -13,7 +13,13 @@ MAIL_SERVER = {'host': 'smtp.office365.com', 'port': 587}
 # account
 ACCOUNT = {
     'email': 'test@test.com',
-    'password': 'password'}
+    'password': 'password'
+}
 CC = None 
 
 DEFAULT_USER = 'test@test.com'
+
+# telegram bot
+UST_BOT = False
+BOT_TOKEN = ''
+CHAT_ID = 0 

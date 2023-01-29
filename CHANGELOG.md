@@ -1,3 +1,7 @@
+* 23/01/29
+    - 0.5.9 (models/bot.py) <br>
+        apply telegram bot <br>
+
 * 23/01/01
     - 0.5.8 (models/firewall.py) <br>
         consider when ip range /24 case <br>

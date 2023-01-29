@@ -1,10 +1,12 @@
 from datetime import datetime, timedelta
 import csv
 import os 
+import asyncio
 
 from .db import BasicModel
 from .mail import send_email 
-from configs import BASE_DIR, EVIDENCE_DIR, CSV_FILE_NAME, USE_NOTICE_EMAIL, NGINX_ACCESS_LOG_KEYS, AUTH_LOG_KEYS
+from .bot import bot_send_message
+from configs import BASE_DIR, EVIDENCE_DIR, CSV_FILE_NAME, USE_NOTICE_EMAIL, NGINX_ACCESS_LOG_KEYS, AUTH_LOG_KEYS, USE_BOT
 from configs import MONITORING_SITE, WEB_SITE_IP, FIREWALL_SITE, MANUAL_SITE, ANALYZE_SITE
 
 class LogModel(BasicModel):
@@ -142,6 +144,11 @@ class LogModel(BasicModel):
 
             self.logger.info('email: {}'.format(subject))
             sent = send_email(email_list=email_list, subject=subject, body=body, attached_file=csv_file_name)
+            if USE_BOT:
+                try:
+                    asyncio.run(bot_send_message(msg=body))
+                except Exception as e:
+                    self.logger.error('bot error: {}'.format(e))
             return sent 
         else:
             self.logger.error('email failed')

@@ -100,6 +100,14 @@ class Analyze:
             nginx_log_dict['msg'] = 'SSL read failed'
         elif 'access forbidden by rule' in message_group:
             nginx_log_dict['msg'] = 'access forbidden'
+        elif 'header already sent while sending to client' in message_group:
+            nginx_log_dict['msg'] = 'header already sent'
+        elif 'is forbidden' in message_group:
+            nginx_log_dict['msg'] = 'forbidden'
+        elif 'upstream timed out' in message_group:
+            nginx_log_dict['msg'] = 'upstream timed out'
+        elif 'Connection reset by peer' in message_group:
+            nginx_log_dict['msg'] = 'Connection reset by peer'
 
         message_list = message_group.split(', ')
         for i, message in enumerate(message_list):
