@@ -1,6 +1,7 @@
 from .iptables import Iptables
 from .page import Page
 from .analyze import Analyze
+from .usage import get_usage
 
 def log_message(headers):
     referer = ''

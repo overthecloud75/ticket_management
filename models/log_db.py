@@ -6,7 +6,7 @@ import asyncio
 from .db import BasicModel
 from .mail import send_email 
 from .bot import bot_send_message
-from configs import BASE_DIR, EVIDENCE_DIR, CSV_FILE_NAME, USE_NOTICE_EMAIL, NGINX_ACCESS_LOG_KEYS, AUTH_LOG_KEYS, USE_BOT
+from configs import BASE_DIR, EVIDENCE_DIR, CSV_FILE_NAME, USE_NOTICE_EMAIL, ACCESS_LOG_KEYS, AUTH_LOG_KEYS, USE_BOT
 from configs import MONITORING_SITE, WEB_SITE_IP, FIREWALL_SITE, MANUAL_SITE, ANALYZE_SITE
 
 class LogModel(BasicModel):
@@ -92,8 +92,8 @@ class LogModel(BasicModel):
             if 'origin' in log:
                 if log['origin'] == '[modsecurity]':
                     subject_main = '[{} : {} 보안 관제] '.format(ticket_no, 'WEB')
-                    results = self.db['nginx_access_logs'].find({'ip': log['ip']}).sort('timestamp', -1)
-                    site, attack_no = self._write_csv_and_get_attack_no(results, wr, site, NGINX_ACCESS_LOG_KEYS)
+                    results = self.db['access_logs'].find({'ip': log['ip']}).sort('timestamp', -1)
+                    site, attack_no = self._write_csv_and_get_attack_no(results, wr, site, ACCESS_LOG_KEYS)
                 else:
                     subject_main = '[{} : {} 보안 관제] '.format(ticket_no, 'AUTH')  
                     results = self.db['auth_logs'].find({'ip': log['ip']}).sort('timestamp', -1)
@@ -156,6 +156,8 @@ class LogModel(BasicModel):
     
     def _post(self, log):
         if 'ip' in log:
+            if type(log['timestamp']) == str:
+                log['timestamp'] = datetime.strptime(log['timestamp'], '%Y-%m-%d:%H:%M:%S')
             if self.need_notice:
                 if 'url' in log:
                     result = self.collection.find_one({'timestamp': log['timestamp'], 'ip': log['ip'], 'url': log['url']})

@@ -1,0 +1,80 @@
+<div>
+    <canvas id="myChart"></canvas>
+</div>
+  
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script nonce="{{ nonce }}">
+    const ctx = document.getElementById('myChart')
+
+    $(document).ready(function(){
+        $.ajax({
+            type: 'get',
+            url : '{{ url }}',
+            dataType: 'json', 
+            success: function(result){
+                const data_dict = result
+                const data = {
+                    labels: data_dict.timestamp,
+                    datasets: [{
+                        label: 'CPU Usage',
+                        data: data_dict.cpu,
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgb(255, 99, 132, 0.5)',
+                        yAxisID: 'y',
+                    },
+                    {
+                        label: 'MEM Usage',
+                        data: data_dict.mem,
+                        borderColor: 'rgb(54, 162, 235)',
+                        backgroundColor: 'rgb(54, 162, 235, 0.5)',
+                        yAxisID: 'y1',
+                    }]
+                }
+                const config = {
+                    type: 'line',
+                    data: data,
+                    options: {
+                        responsive: true,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                        stacked: false,
+                        plugins: {
+                            title: {
+                                display: false,
+                                text: 'Chart.js Line Chart - Multi Axis'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                min: 0,
+                                max: 100
+                            },
+                            y1: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                // grid line settings
+                                grid: {
+                                    drawOnChartArea: false, // only want the grid lines for one axis to show up
+                                },
+                                min: 0,
+                                max: 100,
+                            },
+                        },
+                        layout: {padding: 30}
+                    },
+                }
+                new Chart(ctx, config)
+            },
+            error:function(err){  
+                console.log(err)
+            }
+        })
+    })
+</script>

@@ -3,7 +3,7 @@ from .db import BasicModel
 
 class ErrorModel(BasicModel):
 
-    def __init__(self, model='nginx_error_logs', need_notice=False):
+    def __init__(self, model='error_logs', need_notice=False):
         super().__init__(model=model)
 
     def get(self, page=1):

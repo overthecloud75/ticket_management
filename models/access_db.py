@@ -3,7 +3,7 @@ from .db import BasicModel
 
 class AccessModel(BasicModel):
 
-    def __init__(self, model='nginx_access_logs', need_notice=False):
+    def __init__(self, model='access_logs', need_notice=False):
         super().__init__(model=model)
 
     def get(self, page=1):

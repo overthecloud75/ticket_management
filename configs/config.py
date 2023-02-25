@@ -46,17 +46,19 @@ DPORT_TO_PORT = {
 }
 
 # Fail2Ban, Nginx, Auth log 
-FAIL2BAN_LOG_DIR = '/var/log/fail2ban.log'
-NGINX_ACCESS_LOG_DIR = '/usr/local/nginx/logs/access.log'
-NGINX_ERROR_LOG_DIR = '/usr/local/nginx/logs/error.log'
-AUTH_LOG_DIR = '/var/log/auth.log'
+FAIL2BAN_LOG_PATH = '/var/log/fail2ban.log'
+NGINX_ACCESS_LOG_PATH = '/usr/local/nginx/logs/access.log'
+NGINX_ERROR_LOG_PATH = '/usr/local/nginx/logs/error.log'
+AUTH_LOG_PATH = '/var/log/auth.log'
 IPV4_FILE = 'ipv4.csv'
 
 # email Setting
 USE_NOTICE_EMAIL = True
 
+MANAGEMENT_TYPE = 'server'
+WEB_SERVER_TYPE = 'nginx'
 # log_keys
-NGINX_ACCESS_LOG_KEYS = ['timestamp', 'ip', 'host', 'method', 'url', 'http_version', 'status', 'size', 'referer', 'user_agent', 'body', 'request_time', 'geo_ip']
+ACCESS_LOG_KEYS = ['timestamp', 'ip', 'host', 'method', 'url', 'http_version', 'status', 'size', 'referer', 'user_agent', 'body', 'request_time', 'geo_ip']
 AUTH_LOG_KEYS = ['timestamp', 'client', 'ip', 'id', 's_port', 'geo_ip']
 
 AUTH_LOG_FILTERING = ['Invalid user', 'invalid user', 'Disconnected from authenticating user', 'Failed password for', 'from', 

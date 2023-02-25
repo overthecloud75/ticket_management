@@ -1,3 +1,13 @@
+* 23/02/25
+    - 0.6.2 (views/api_views.py) <br>
+        apply to get remote log <br>
+
+    - 0.6.1 (templates/navbar.html) <br>
+        apply nav-pill and nav-link active <br>
+
+    - 0.6.0 (templates/chart.html) <br>
+        chart with chart.js for cpu and mem usage <br>
+
 * 23/01/29
     - 0.5.9 (models/bot.py) <br>
         apply telegram bot <br>

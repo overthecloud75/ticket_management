@@ -15,6 +15,9 @@ class TicketModel(BasicModel):
         return paging, data_list
 
     def post(self, request_data={}):
+        _id = request_data['_id']
+        fix = request_data['fix']
+        request_data['fix_timestamp'] = datetime.now()
         self.post_by_id(request_data)
 
 

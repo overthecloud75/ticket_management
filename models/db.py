@@ -11,9 +11,9 @@ db = mongoClient['report']
 # createIndex https://velopert.com/560
 db.fail2ban_logs.create_index([('timestamp', 1), ('ip', 1)])
 db.auth_logs.create_index([('timestamp', 1), ('ip', 1)])
-db.nginx_access_logs.create_index([('timestamp', 1), ('ip', 1)])
-db.nginx_access_logs.create_index([('timestamp', 1), ('status', 1)])
-db.nginx_error_logs.create_index([('timestamp', 1), ('ip', 1)])
+db.access_logs.create_index([('timestamp', 1), ('ip', 1)])
+db.access_logs.create_index([('timestamp', 1), ('status', 1)])
+db.error_logs.create_index([('timestamp', 1), ('ip', 1)])
 db.firewall_policies.create_index([('timestamp', 1), ('ip', 1)])
 
 class BasicModel:

@@ -4,7 +4,7 @@ from datetime import datetime
 
 from models import Firewall, TicketModel, AccessModel, ErrorModel
 from forms import RuleUpdateForm, TicketUpdateForm
-from configs import FIREWALL_COLUMN_HEADER, TICKET_COLUMN_HEADER, ACCESS_COLUMN_HEADER, ERROR_COLUMN_HEADER, ANALYZE_SITE
+from configs import FIREWALL_COLUMN_HEADER, TICKET_COLUMN_HEADER, ACCESS_COLUMN_HEADER, ERROR_COLUMN_HEADER, ANALYZE_SITE, FIREWALL_SITE
 
 # blueprint
 bp = Blueprint('main', __name__, url_prefix='/')
@@ -61,17 +61,6 @@ def history(ticket):
     paging, data_list = management.get_by_ticket(ticket, page=page)
     return render_template('pages/access.html', **locals())
 
-@bp.route('/api/firewall/delete', methods=['POST'])
-def delete_firewall_rule():
-    form = RuleUpdateForm()
-    if form.validate_on_submit():
-        request_data = {'ip': form.ip.data, 'ip_class':form.ip_class.data, 'protocol': form.protocol.data, 'port': form.port.data, 'block': form.block.data}
-        management = Firewall()
-        management.delete(request_data=request_data)
-        return 'validate', 200
-    else:
-        return 'not validate', 400
-
 @bp.route('/access_log', methods=['GET'])
 def access():
     page = request.args.get('page', default=1)
@@ -111,5 +100,11 @@ def error():
     column_header = ERROR_COLUMN_HEADER
     paging, data_list = management.get(page=page)
     return render_template('pages/access.html', **locals())
+
+@bp.route('/load_chart', methods=['GET'])
+def load():
+    url = FIREWALL_SITE + 'api/loads'
+    nonce = uuid.uuid4().hex
+    return render_template('pages/load.html', **locals())
 
 

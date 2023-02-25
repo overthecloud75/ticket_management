@@ -5,14 +5,14 @@ from logging.config import dictConfig
 from flask import Flask
 from datetime import datetime
 
-from models import LogModel
-from utils import Analyze
-from configs import BASE_DIR, LOG_DIR
+from models import LogModel, UsageModel
+from utils import Analyze, get_usage
+from configs import BASE_DIR, LOG_DIR, WEB_SERVER_TYPE
 
 def read_log():
 
-    nginx_access_model = LogModel(model='nginx_access_logs')
-    nginx_error_model = LogModel(model='nginx_error_logs')
+    access_model = LogModel(model='access_logs')
+    error_model = LogModel(model='error_logs')
     auth_model = LogModel(model='auth_logs')
     fail2ban_model = LogModel(model='fail2ban_logs', need_notice=True)
     analyze = Analyze(interval=10)  
@@ -21,19 +21,29 @@ def read_log():
         analyze.timestamp = datetime.now()
         print(analyze.timestamp)
         ban_list = analyze.read_fail2ban_log()
-        nginx_access_log_list = analyze.read_nginx_access_log()
-        nginx_error_log_list = analyze.read_nginx_error_log()
-        auth_log_list = analyze.read_auth_log()
 
-        nginx_access_model.many_post(nginx_access_log_list)
-        nginx_error_model.many_post(nginx_error_log_list)
+        if WEB_SERVER_TYPE == 'nginx':
+            access_log_list = analyze.read_nginx_access_log()
+            error_log_list = analyze.read_nginx_error_log()
+            auth_log_list = analyze.read_auth_log()
+
+        access_model.many_post(access_log_list)
+        error_model.many_post(error_log_list)
         auth_model.many_post(auth_log_list)
         fail2ban_model.many_post(ban_list)
 
         analyze.previous_timestamp = analyze.timestamp
 
         time.sleep(300)
-        
+
+def read_cpu_mem():
+    ps_model = UsageModel()
+    while True:
+        time.sleep(30)
+        usage = get_usage()
+        usage['timestamp'] = datetime.now()
+        ps_model.post(usage)
+
 def create_app():
     # https://flask.palletsprojects.com/en/2.0.x/logging/
     # https://wikidocs.net/81081
@@ -69,8 +79,9 @@ def create_app():
         enumerate=enumerate, 
     )
 
-    from views import main_views
+    from views import main_views, api_views
     app.register_blueprint(main_views.bp)
+    app.register_blueprint(api_views.bp)
 
     return app
 
@@ -80,5 +91,9 @@ if __name__ == '__main__':
     th = threading.Thread(target=read_log)
     th.daemon = True
     th.start()
+
+    th2 = threading.Thread(target=read_cpu_mem)
+    th2.daemon = True
+    th2.start()
 
     app.run(host='127.0.0.1', debug=False, threaded=True)

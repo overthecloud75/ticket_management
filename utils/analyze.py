@@ -3,7 +3,7 @@ import re
 import csv
 import logging
 
-from configs import FAIL2BAN_LOG_DIR, NGINX_ACCESS_LOG_DIR, NGINX_ERROR_LOG_DIR, AUTH_LOG_DIR, IPV4_FILE, AUTH_LOG_FILTERING
+from configs import FAIL2BAN_LOG_PATH, NGINX_ACCESS_LOG_PATH, NGINX_ERROR_LOG_PATH, AUTH_LOG_PATH, IPV4_FILE, AUTH_LOG_FILTERING, MANAGEMENT_TYPE
     
 class Analyze:
 
@@ -61,16 +61,18 @@ class Analyze:
         body = result.group('body')
         scheme = result.group('scheme')
 
-        try:
-            geo_ip = self._find_country(ip)
-        except Exception as e:
-            self.logger.info('{}: {}'.format(e, line))
-            geo_ip = 'un'
+        log_dict = {'timestamp': datetime_timestamp, 'ip': ip, 'host': host, 'method': method, 'scheme': scheme, 'url': url, 
+                'http_version': http_version, 'status': status, 'size': size, 'referer': referer, 'user_agent': user_agent, 'body': body, 'request_time': request_time}
 
-        nginx_log_dict = {'timestamp': datetime_timestamp, 'ip': ip, 'host': host, 'method': method, 'scheme': scheme, 'url': url,
-                        'http_version': http_version, 'status': status, 'size': size, 'referer': referer, 'user_agent': user_agent, 'body': body, 'request_time': request_time, 'geo_ip': geo_ip}
+        if MANAGEMENT_TYPE == 'server':  
+            try:
+                geo_ip = self._find_country(ip)
+            except Exception as e:
+                self.logger.info('{}: {}'.format(e, line))
+                geo_ip = 'un'
+            log_dict['geo_ip'] = geo_ip 
 
-        return nginx_log_dict
+        return log_dict
 
     def _parse_nginx_error_log(self, line):
 
@@ -87,27 +89,29 @@ class Analyze:
         datetime_timestamp = datetime.strptime(result.group('time'), '%Y/%m/%d %H:%M:%S')
         level = result.group('level')
         message_group = result.group('message')
-        nginx_log_dict = {'timestamp': datetime_timestamp, 'level': level}
+        log_dict = {'timestamp': datetime_timestamp, 'level': level}
 
-        nginx_log_dict['msg'] = ''
+        log_dict['msg'] = ''
         if 'ModSecurity: Access denied with code 403' in message_group:
-            nginx_log_dict['msg'] = '403 by WAF'
+            log_dict['msg'] = '403 by WAF'
         elif 'No such file or directory' in message_group:
-            nginx_log_dict['msg'] = '404'
+            log_dict['msg'] = '404'
         elif 'SSL_do_handshake() failed' in message_group:
-            nginx_log_dict['msg'] = 'SSL handshake failed'
+            log_dict['msg'] = 'SSL handshake failed'
         elif 'SSL_read() failed' in message_group:
-            nginx_log_dict['msg'] = 'SSL read failed'
+            log_dict['msg'] = 'SSL read failed'
         elif 'access forbidden by rule' in message_group:
-            nginx_log_dict['msg'] = 'access forbidden'
+            log_dict['msg'] = 'access forbidden'
         elif 'header already sent while sending to client' in message_group:
-            nginx_log_dict['msg'] = 'header already sent'
+            log_dict['msg'] = 'header already sent'
         elif 'is forbidden' in message_group:
-            nginx_log_dict['msg'] = 'forbidden'
+            log_dict['msg'] = 'forbidden'
         elif 'upstream timed out' in message_group:
-            nginx_log_dict['msg'] = 'upstream timed out'
+            log_dict['msg'] = 'upstream timed out'
         elif 'Connection reset by peer' in message_group:
-            nginx_log_dict['msg'] = 'Connection reset by peer'
+            log_dict['msg'] = 'Connection reset by peer'
+        elif 'Connection refused' in message_group:
+            log_dict['msg'] = 'Connection refused'
 
         message_list = message_group.split(', ')
         for i, message in enumerate(message_list):
@@ -115,13 +119,13 @@ class Analyze:
             if message.endswith('\n'):
                 message = message.replace('\n', '')
             if i == 0:
-                nginx_log_dict['reason'] = message
+                log_dict['reason'] = message
             if message.startswith('client: '):
-                nginx_log_dict['ip'] = message.replace('client: ', '')
+                log_dict['ip'] = message.replace('client: ', '')
             if message.startswith('server: '):
-                nginx_log_dict['server'] = message.replace('server: ', '')
+                log_dict['server'] = message.replace('server: ', '')
             if message.startswith('host: '):
-                nginx_log_dict['host'] = message.replace('host: ', '')
+                log_dict['host'] = message.replace('host: ', '')
             if message.startswith('request: '):
                 request = message.replace('request: ', '')
                 request_list = request.split(' ')
@@ -133,18 +137,19 @@ class Analyze:
                     method = '-'
                     url = request
                     http_version = '-'
-                nginx_log_dict['method'] = method
-                nginx_log_dict['url'] = url
-                nginx_log_dict['http_version'] = http_version
-            
-        try:
-            geo_ip = self._find_country(nginx_log_dict['ip'])
-        except Exception as e:
-            self.logger.info('{}: {}'.format(e, line))
-            geo_ip = 'un'
-        nginx_log_dict['geo_ip'] = geo_ip
+                log_dict['method'] = method
+                log_dict['url'] = url
+                log_dict['http_version'] = http_version
 
-        return nginx_log_dict
+        if MANAGEMENT_TYPE == 'server':  
+            try:
+                geo_ip = self._find_country(log_dict['ip'])
+            except Exception as e:
+                self.logger.info('{}: {}'.format(e, line))
+                geo_ip = 'un'
+            log_dict['geo_ip'] = geo_ip
+
+        return log_dict
 
     def _parse_auth_log(self, line):
         new_line = line
@@ -174,16 +179,21 @@ class Analyze:
         datetime_timestamp = datetime(year, month_num, int(new_line_list[1]), int(hms[0]), int(hms[1]), int(hms[2]), 0)
 
         ip = new_line_list[6]
-        try:
-            geo_ip = self._find_country(ip)
-        except Exception as e:
-            self.logger.error('{}: {}'.format(e, new_line_list))
-            geo_ip = 'un'
-        if len(new_line_list) == 8: # id가 없는 경우
-            auth_log_dict = {'timestamp': datetime_timestamp, 'client': new_line_list[3], 'id': '', 'ip': ip, 's_port': int(new_line_list[6]), 'geo_ip': geo_ip}
+
+        if MANAGEMENT_TYPE == 'server':
+            try:
+                geo_ip = self._find_country(ip)
+            except Exception as e:
+                self.logger.error('{}: {}'.format(e, new_line_list))
+                geo_ip = 'un'
         else:
-            auth_log_dict = {'timestamp': datetime_timestamp, 'client': new_line_list[3], 'id': new_line_list[5], 'ip': ip, 's_port': int(new_line_list[7]), 'geo_ip': geo_ip}
-        return auth_log_dict
+            geo_ip = '-'
+
+        if len(new_line_list) == 8: # id가 없는 경우
+            log_dict = {'timestamp': datetime_timestamp, 'client': new_line_list[3], 'id': '', 'ip': ip, 's_port': int(new_line_list[6]), 'geo_ip': geo_ip}
+        else:
+            log_dict = {'timestamp': datetime_timestamp, 'client': new_line_list[3], 'id': new_line_list[5], 'ip': ip, 's_port': int(new_line_list[7]), 'geo_ip': geo_ip}
+        return log_dict
 
     def _find_country(self, ip):
         ip_split = ip.split('.')
@@ -240,7 +250,7 @@ class Analyze:
     def read_fail2ban_log(self):
 
         ban_list = []
-        with open(FAIL2BAN_LOG_DIR, 'r', encoding='utf-8') as f:
+        with open(FAIL2BAN_LOG_PATH, 'r', encoding='utf-8') as f:
             # https://nashorn.tistory.com/entry/Python-%ED%85%8D%EC%8A%A4%ED%8A%B8-%ED%8C%8C%EC%9D%BC-%EA%B1%B0%EA%BE%B8%EB%A1%9C-%EC%9D%BD%EA%B8%B0
             # python file 거꾸로 읽기 
             reverse_lines = f.readlines()[::-1]
@@ -274,23 +284,23 @@ class Analyze:
 
     def read_nginx_access_log(self):
 
-        nginx_log_list = []
-        with open(NGINX_ACCESS_LOG_DIR, 'r', encoding='utf-8') as f:
+        log_list = []
+        with open(NGINX_ACCESS_LOG_PATH, 'r', encoding='utf-8') as f:
             reverse_lines = f.readlines()[::-1]
             for line in reverse_lines:
                 try:
-                    nginx_log_dict = self._parse_nginx_access_log(line)
-                    if nginx_log_dict['timestamp'] < self.previous_timestamp:
+                    log_dict = self._parse_nginx_access_log(line)
+                    if log_dict['timestamp'] < self.previous_timestamp:
                         break
-                    nginx_log_list.append(nginx_log_dict)
+                    log_list.append(log_dict)
                 except Exception as e:
                     self.logger.error('{}: {}'.format(e, line))
-        return nginx_log_list
+        return log_list
     
     def read_nginx_error_log(self):
 
-        nginx_log_list = []
-        with open(NGINX_ERROR_LOG_DIR, 'r', encoding='utf-8') as f:
+        log_list = []
+        with open(NGINX_ERROR_LOG_PATH, 'r', encoding='utf-8') as f:
             try:
                 reverse_lines = f.readlines()[::-1]
             except Exception as e:
@@ -298,18 +308,18 @@ class Analyze:
             else:
                 for line in reverse_lines:
                     try:
-                        nginx_log_dict = self._parse_nginx_error_log(line)
-                        if nginx_log_dict['timestamp'] < self.previous_timestamp:
+                        log_dict = self._parse_nginx_error_log(line)
+                        if log_dict['timestamp'] < self.previous_timestamp:
                             break
-                        nginx_log_list.append(nginx_log_dict)
+                        log_list.append(log_dict)
                     except Exception as e:
                         self.logger.error('{}: {}'.format(e, line))
-        return nginx_log_list
+        return log_list
 
     def read_auth_log(self):
 
-        auth_log_list = []
-        with open(AUTH_LOG_DIR, 'r', encoding='utf-8') as f:
+        log_list = []
+        with open(AUTH_LOG_PATH, 'r', encoding='utf-8') as f:
             reverse_lines = f.readlines()[::-1]
             for i, line in enumerate(reverse_lines):
                 if 'pam_unix(sshd:auth)' in line:
@@ -324,11 +334,11 @@ class Analyze:
                     pass
                 else:
                     if 'ssh2' in line:
-                        auth_log_dict = self._parse_auth_log(line)
-                        if auth_log_dict['timestamp'] < self.previous_timestamp:
+                        log_dict = self._parse_auth_log(line)
+                        if log_dict['timestamp'] < self.previous_timestamp:
                             break
-                        auth_log_list.append(auth_log_dict)
-        return auth_log_list
+                        log_list.append(log_dict)
+        return log_list
 
 if __name__ == '__main__':
     analyze = Analyze()
